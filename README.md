@@ -2,6 +2,8 @@
 
 **DocTalk** is an AI-powered web app that lets you chat with your PDF documents using LLMs and semantic search for quick and accurate answers.
 
+![Landing Page](public/DocTalk.png)
+
 ---
 
 ## 🛠 Tech Stack
