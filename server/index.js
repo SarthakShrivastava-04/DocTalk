@@ -9,10 +9,10 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 const queue = new Queue("file-queue", {
   connection: {
-    host: "localhost",
+    host: "redis",
     port: 6379,
   },
-});   
+});
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -48,7 +48,6 @@ app.post("/upload/pdf", upload.single("pdf"), async (req, res) => {
 
 app.get("/chat", async (req, res) => {
   const userQuery = req.query.message;
-  // const userQuery = "what is the name of unit 3 of image processing course?";
 
   const embeddings = new GoogleGenerativeAIEmbeddings({
     model: "text-embedding-004",
@@ -64,7 +63,7 @@ app.get("/chat", async (req, res) => {
   );
 
   const ret = vectorStore.asRetriever({
-    k: 2,
+    k: 10,
   });
   const result = await ret.invoke(userQuery);
 
@@ -83,7 +82,7 @@ app.get("/chat", async (req, res) => {
     ["system", SYSTEM_PROMPT],
     ["human", userQuery],
   ]);
-  
+
   console.log("Chat Result: ", result);
 
   return res.json({

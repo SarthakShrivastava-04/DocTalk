@@ -116,7 +116,7 @@ const ChatComponent: React.FC = () => {
         </nav>
       </header>
 
-      <div className="flex-1 w-3xl mx-auto mt-4 pb-24 pt-14 px-2">
+      <div className="flex-1 w-3xl mx-auto mt-8 pb-24 pt-14 px-2">
         {messages.length === 0 && (
           <div className="text-center mt-60">
             <h2 className="text-3xl font-bold">
