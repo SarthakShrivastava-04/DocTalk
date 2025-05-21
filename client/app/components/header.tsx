@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const menuItems = [
   { name: "Features", href: "#features" },
   { name: "Chat", href: "/chat" },
-  { name: "Documentation", href: "#" },
+  { name: "Documentation", href: "https://github.com/SarthakShrivastava-04/DocTalk#" },
 ];
 
 export const HeroHeader = () => {

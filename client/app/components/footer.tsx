@@ -52,7 +52,7 @@ export default function FooterSection() {
           <div className="order-first flex flex-wrap justify-center gap-6 text-sm md:order-last">
             <span className="text-muted-foreground order-last block text-center text-sm md:order-first">Made by Sarthak</span>
             <Link
-              href="#"
+              href="https://github.com/SarthakShrivastava-04/DocTalk"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"

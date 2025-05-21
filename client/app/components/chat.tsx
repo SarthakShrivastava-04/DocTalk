@@ -32,6 +32,12 @@ const ChatComponent: React.FC = () => {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    console.error("API URL is not defined in environment variables.");
+    return;
+  }
+
   const scrollToBottom = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,7 +59,7 @@ const ChatComponent: React.FC = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/chat?message=${encodeURIComponent(message)}`
+        `${apiUrl}/chat?message=${encodeURIComponent(message)}`
       );
       if (!res.ok) throw new Error("Network error");
       const data = await res.json();

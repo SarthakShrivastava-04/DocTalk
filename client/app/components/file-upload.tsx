@@ -3,6 +3,12 @@ import { Upload } from "lucide-react";
 import * as React from "react";
 
 const FileUploadComponent: React.FC = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) {
+    console.error("API URL is not defined in environment variables.");
+    return;
+  }
+
   const handleFileUpload = () => {
     const el = document.createElement("input");
     el.setAttribute("type", "file");
@@ -15,7 +21,7 @@ const FileUploadComponent: React.FC = () => {
           const formData = new FormData();
           formData.append("pdf", file);
 
-          await fetch("http://localhost:8000/upload/pdf", {
+          await fetch(`${apiUrl}/upload/pdf`, {
             method: "POST",
             body: formData,
           });

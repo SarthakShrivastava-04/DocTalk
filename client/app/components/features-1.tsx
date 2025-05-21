@@ -20,7 +20,7 @@ export default function Features() {
                                 />
                             </CardDecorator>
 
-                            <h3 className="mt-6 font-medium">Download References as PDFs</h3>
+                            <h3 className="mt-6 font-medium">Download References as PDFs (coming soon)</h3>
                         </CardHeader>
 
                         <CardContent>

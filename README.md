@@ -12,11 +12,14 @@ Users upload their documents (like PDFs), which are then parsed and chunked into
 
 ## 🛠 Tech Stack
 
-### 🧑‍🎨 Frontend  
-Next.js, Tailwind CSS, Shadcn UI, Framer Motion, Typescript
+### Frontend
+Next.js, Tailwind CSS, Shadcn UI, Framer Motion, TypeScript
 
-### 🔧 Backend  
-LangChain, Google Gemini, Quadrant DB, BullMQ, Redis, Docker, Express, Javascript
+### Backend
+LangChain, Google Gemini, Quadrant DB, BullMQ, Redis, Express, JavaScript
+
+### Deployment & Infrastructure
+Amazon EC2, NGINX, Docker
 
 ---
 
