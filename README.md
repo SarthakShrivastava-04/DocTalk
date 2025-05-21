@@ -1,10 +1,11 @@
 # 📄 DocTalk
 
+🌐 **Live Demo**: [DocTalk](https://doc-talk-nine.vercel.app/)
+
 **DocTalk** is an AI-powered web app that lets you chat with your PDF documents using LLMs and semantic search for quick and accurate answers.
 
 ### ⚙️ How It Works
 Users upload their documents (like PDFs), which are then parsed and chunked into vector embeddings. These embeddings are stored in vector DB (Quadrant DB here) and used to perform semantic search. When a user asks a question, the app retrieves the most relevant document chunks and sends them to an LLM(Gemini here) to generate a precise answer.
-
 
 ![Landing Page](client/public/DocTalk.png)
 
@@ -12,13 +13,13 @@ Users upload their documents (like PDFs), which are then parsed and chunked into
 
 ## 🛠 Tech Stack
 
-### Frontend
+### 🧑‍🎨 Frontend  
 Next.js, Tailwind CSS, Shadcn UI, Framer Motion, TypeScript
 
-### Backend
+### 🔧 Backend  
 LangChain, Google Gemini, Quadrant DB, BullMQ, Redis, Express, JavaScript
 
-### Deployment & Infrastructure
+### ☁️ Deployment & Infrastructure  
 Amazon EC2, NGINX, Docker
 
 ---
