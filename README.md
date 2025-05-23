@@ -20,7 +20,7 @@ Next.js, Tailwind CSS, Shadcn UI, Framer Motion, TypeScript
 LangChain, Google Gemini, Quadrant DB, BullMQ, Redis, Express, JavaScript
 
 ### ☁️ Deployment & Infrastructure  
-Amazon EC2, NGINX, Docker
+AWS EC2, NGINX, Docker
 
 ---
 
