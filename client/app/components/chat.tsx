@@ -29,13 +29,14 @@ const ChatComponent: React.FC = () => {
     [key: number]: boolean;
   }>({});
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [pdfUploaded, setPdfUploaded] = React.useState<boolean>(false);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) {
     console.error("API URL is not defined in environment variables.");
-    return;
+    return null;
   }
 
   const scrollToBottom = () => {
@@ -62,6 +63,7 @@ const ChatComponent: React.FC = () => {
         `${apiUrl}/chat?message=${encodeURIComponent(message)}`
       );
       if (!res.ok) throw new Error("Network error");
+
       const data = await res.json();
       setMessages((prev) => [
         ...prev,
@@ -101,6 +103,7 @@ const ChatComponent: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground relative">
+      {/* Header */}
       <header>
         <nav className="fixed top-0 left-0 right-0 w-full border-b border-stone-700 bg-background px-4 py-5 z-50">
           <div className="relative max-w-[67rem] mx-auto h-[40px]">
@@ -122,16 +125,26 @@ const ChatComponent: React.FC = () => {
         </nav>
       </header>
 
+      {/* Messages */}
       <div className="flex-1 w-3xl mx-auto mt-8 pb-24 pt-14 px-2">
         {messages.length === 0 && (
           <div className="text-center mt-60">
-            <h2 className="text-3xl font-bold">
-              Start Chatting with Your PDFs
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg">
-              Ask questions, get insights, and view references instantly—no
-              signup required.
-            </p>
+            {pdfUploaded ? (
+              <>
+                {" "}
+                <h2 className="text-3xl font-bold">
+                  Start Chatting with Your PDFs
+                </h2>
+                <p className="text-muted-foreground mt-4 text-lg">
+                  Ask questions, get insights, and view references instantly—no
+                  signup required.
+                </p>
+              </>
+            ) : (
+              <h2 className="text-3xl font-bold">
+                Upload any PDF to get started...
+              </h2>
+            )}
           </div>
         )}
 
@@ -150,7 +163,8 @@ const ChatComponent: React.FC = () => {
               }`}
             >
               <p className="text-base">{msg.content}</p>
-              {msg.role === "assistant" && msg.docs && msg.docs.length > 0 && (
+
+              {msg.role === "assistant" && (msg.docs?.length ?? 0) > 0 && (
                 <div className="mt-3">
                   <Button
                     variant="ghost"
@@ -163,11 +177,12 @@ const ChatComponent: React.FC = () => {
                     ) : (
                       <ChevronDown className="w-4 h-4 mr-1" />
                     )}
-                    References ({msg.docs.length})
+                    References ({msg.docs?.length})
                   </Button>
+
                   {expandedDocs[index] && (
                     <div className="mt-2 p-3 bg-background rounded-3xl border">
-                      {msg.docs.map((doc, docIndex) => (
+                      {msg.docs?.map((doc, docIndex) => (
                         <div
                           key={docIndex}
                           className="mb-3 text-sm text-muted-foreground"
@@ -193,50 +208,29 @@ const ChatComponent: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Input Section */}
       <div className="fixed bottom-0 left-0 right-0 pb-2 px-2 bg-background">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-end gap-3 bg-stone-900 rounded-3xl p-4 shadow">
-            <FileUploadComponent />
+            <FileUploadComponent onUploadSuccess={() => setPdfUploaded(true)} />
             <textarea
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               onInput={handleInput}
-              placeholder="Ask your PDFs anything..."
+              placeholder={
+                pdfUploaded
+                  ? "Ask your PDF anything..."
+                  : "Upload any PDF to get started..."
+              }
               rows={1}
-              className="
-                flex-1 
-                bg-stone-900 
-                text-foreground 
-                rounded-3xl 
-                py-3 px-4 
-                resize-none 
-                max-h-60
-                border-none 
-                outline-none 
-                focus:outline-none 
-                focus:border-none
-              "
+              className="flex-1 bg-stone-900 text-foreground rounded-3xl py-3 px-4 resize-none max-h-60 border-none outline-none focus:outline-none focus:border-none"
             />
             <Button
               onClick={handleSend}
               disabled={!message.trim() || isLoading}
-              className="
-                bg-stone-900 
-                text-foreground 
-                mb-1 
-                rounded-2xl
-                border border-stone-600 
-                px-6 
-                py-3 
-                flex 
-                items-center 
-                gap-2
-                cursor-pointer
-                transition-colors duration-300
-                hover:bg-stone-800/70
-              "
+              className="bg-stone-900 text-foreground mb-1 rounded-2xl border border-stone-600 px-6 py-3 flex items-center gap-2 cursor-pointer transition-colors duration-300 hover:bg-stone-800/70"
             >
               {isLoading ? (
                 "..."
