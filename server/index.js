@@ -73,7 +73,7 @@ app.get("/chat", async (req, res) => {
     Context:${contextText}`;
 
   const llm = new ChatGoogleGenerativeAI({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     temperature: 0,
     apiKey: process.env.GOOGLE_API_KEY,
   });
