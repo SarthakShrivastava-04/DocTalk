@@ -1,14 +1,10 @@
 "use client";
 
-import { Upload, Loader2 } from "lucide-react";
 import * as React from "react";
+import { Upload, Loader2 } from "lucide-react";
+import { uploadPdfFile, type UploadedFile } from "@/lib/upload";
 
-export interface UploadedFile {
-  id: string;
-  name: string;
-  size: number;
-  uploadedAt: Date;
-}
+export type { UploadedFile };
 
 type FileUploadProps = {
   onUploadStart?: (fileName: string) => void;
@@ -18,15 +14,15 @@ type FileUploadProps = {
   disabled?: boolean;
 };
 
-const FileUploadComponent: React.FC<FileUploadProps> = ({ 
+const FileUploadComponent: React.FC<FileUploadProps> = ({
   onUploadStart,
-  onUploadSuccess, 
+  onUploadSuccess,
   onUploadError,
   isUploading = false,
-  disabled = false
+  disabled = false,
 }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  
+
   if (!apiUrl) {
     console.error("API URL is not defined in environment variables.");
     return null;
@@ -35,79 +31,48 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({
   const handleFileUpload = () => {
     if (disabled || isUploading) return;
 
-    const el = document.createElement("input");
-    el.setAttribute("type", "file");
-    el.setAttribute("accept", "application/pdf");
-    el.setAttribute("multiple", "true"); // Allow multiple files
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/pdf";
+    input.multiple = true;
 
-    el.addEventListener("change", async () => {
-      if (el.files && el.files.length > 0) {
-        // Process each file
-        for (let i = 0; i < el.files.length; i++) {
-          const file = el.files[i];
-          
-          // Validate file size (e.g., max 10MB)
-          if (file.size > 10 * 1024 * 1024) {
-            onUploadError?.(`File "${file.name}" is too large. Maximum size is 10MB.`);
-            continue;
-          }
+    input.addEventListener("change", async () => {
+      if (!input.files) return;
 
-          try {
-            onUploadStart?.(file.name);
-            
-            const formData = new FormData();
-            formData.append("pdf", file);
-
-            const res = await fetch(`${apiUrl}/upload/pdf`, {
-              method: "POST",
-              body: formData,
-            });
-
-            if (res.ok) {
-              const uploadedFile: UploadedFile = {
-                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                name: file.name,
-                size: file.size,
-                uploadedAt: new Date(),
-              };
-              
-              console.log(`File "${file.name}" uploaded successfully!`);
-              onUploadSuccess?.(uploadedFile);
-            } else {
-              const errorText = await res.text();
-              throw new Error(errorText || "Upload failed");
-            }
-          } catch (error) {
-            console.error(`File upload failed for "${file.name}":`, error);
-            onUploadError?.(
-              `Failed to upload "${file.name}": ${
-                error instanceof Error ? error.message : "Unknown error"
-              }`
-            );
-          }
+      for (const file of Array.from(input.files)) {
+        try {
+          onUploadStart?.(file.name);
+          const uploaded = await uploadPdfFile(file, apiUrl);
+          onUploadSuccess?.(uploaded);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          onUploadError?.(`Failed to upload "${file.name}": ${message}`);
         }
       }
     });
 
-    el.click();
+    input.click();
   };
 
+  const isDisabled = disabled || isUploading;
+
   return (
-    <div
+    <button
+      type="button"
       onClick={handleFileUpload}
-      className={`flex justify-center items-center w-10 h-10 rounded-full border border-stone-600 bg-stone-900 p-1 transition-colors duration-300 ${
-        disabled || isUploading 
-          ? "opacity-50 cursor-not-allowed" 
-          : "cursor-pointer hover:bg-stone-800/70"
+      disabled={isDisabled}
+      title={isUploading ? "Processing..." : "Upload PDF"}
+      aria-label="Upload PDF"
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[28px] border border-border bg-secondary transition-colors ${
+        isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-accent"
       }`}
-      title={isUploading ? "Uploading..." : "Upload PDF files"}
     >
       {isUploading ? (
-        <Loader2 className="w-5 h-5 text-foreground animate-spin" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       ) : (
-        <Upload className="w-5 h-5 text-foreground" />
+        <Upload className="h-4 w-4 text-muted-foreground" />
       )}
-    </div>
+    </button>
   );
 };
 
