@@ -21,7 +21,7 @@ const worker = new Worker(
       const docs = await loader.load();
 
       const embeddings = new GoogleGenerativeAIEmbeddings({
-        model: "text-embedding-004",
+        model: "gemini-embedding-2",
         apiKey: process.env.GOOGLE_API_KEY,
       });
 
@@ -30,7 +30,7 @@ const worker = new Worker(
         {
           url: process.env.QDRANT_URL,
           collectionName: "pdf-rag",
-        }
+        },
       );
 
       await vectorStore.addDocuments(docs);
@@ -45,7 +45,7 @@ const worker = new Worker(
       host: "redis",
       port: 6379,
     },
-  }
+  },
 );
 
 worker.on("completed", (job) => {

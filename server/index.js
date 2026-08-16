@@ -16,7 +16,7 @@ const queue = new Queue("file-queue", {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/");  
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -41,16 +41,19 @@ app.post("/upload/pdf", upload.single("pdf"), async (req, res) => {
       filename: req.file.originalname,
       path: req.file.path,
       destination: req.file.destination,
-    })
+    }),
   );
   return res.json({ message: "uploaded" });
 });
+
+const CANDIDATE_COUNT = 20;
+const MAX_SOURCES = 6;
 
 app.get("/chat", async (req, res) => {
   const userQuery = req.query.message;
 
   const embeddings = new GoogleGenerativeAIEmbeddings({
-    model: "text-embedding-004",
+    model: "gemini-embedding-2",
     apiKey: process.env.GOOGLE_API_KEY,
   });
 
@@ -59,21 +62,38 @@ app.get("/chat", async (req, res) => {
     {
       url: process.env.QDRANT_URL,
       collectionName: "pdf-rag",
-    }
+    },
   );
 
   const ret = vectorStore.asRetriever({
-    k: 10,
+    k: CANDIDATE_COUNT,
   });
-  const result = await ret.invoke(userQuery);
+  const candidates = await ret.invoke(userQuery);
+
+  const seenContent = new Set();
+  const result = [];
+  for (const doc of candidates) {
+    const key = doc.pageContent?.trim();
+    if (!key || seenContent.has(key)) continue;
+    seenContent.add(key);
+    result.push(doc);
+    if (result.length >= MAX_SOURCES) break;
+  }
 
   const contextText = result.map((doc) => doc.pageContent).join("\n\n");
 
   const SYSTEM_PROMPT = `You are a helpful assistant. You will be provided with some context and a question. Answer the question based on the context.
-    Context:${contextText}`;
+
+Formatting rules:
+- Reply in plain prose, using normal sentences and short paragraphs.
+- Do not use Markdown syntax of any kind — no **bold**, no #headings, no bullet or numbered lists, no backticks or code fences.
+- If you need to present a few related items, write them into a sentence separated by commas, not as a list.
+- If the context does not contain the answer, say so plainly instead of guessing.
+
+Context:${contextText}`;
 
   const llm = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.5-flash-lite",
     temperature: 0,
     apiKey: process.env.GOOGLE_API_KEY,
   });
