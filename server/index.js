@@ -1,114 +1,39 @@
 import express from "express";
 import cors from "cors";
-import multer from "multer";
-import "dotenv/config";
-import { Queue } from "bullmq";
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
-import { QdrantVectorStore } from "@langchain/qdrant";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
-const queue = new Queue("file-queue", {
-  connection: {
-    host: "redis",
-    port: 6379,
-  },
-});
+import { PORT, validateConfig } from "./config.js";
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `${uniqueSuffix}-${file.originalname}`);
-  },
-});
+import uploadRouter from "./routes/upload.js";
+import chatRouter from "./routes/chat.js";
 
-const upload = multer({ storage: storage });
+validateConfig();
 
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.post("/upload/pdf", upload.single("pdf"), async (req, res) => {
-  await queue.add(
-    "file-ready",
-    JSON.stringify({
-      filename: req.file.originalname,
-      path: req.file.path,
-      destination: req.file.destination,
-    }),
-  );
-  return res.json({ message: "uploaded" });
-});
-
-const CANDIDATE_COUNT = 20;
-const MAX_SOURCES = 6;
-
-app.get("/chat", async (req, res) => {
-  const userQuery = req.query.message;
-
-  const embeddings = new GoogleGenerativeAIEmbeddings({
-    model: "gemini-embedding-2",
-    apiKey: process.env.GOOGLE_API_KEY,
-  });
-
-  const vectorStore = await QdrantVectorStore.fromExistingCollection(
-    embeddings,
-    {
-      url: process.env.QDRANT_URL,
-      collectionName: "pdf-rag",
-    },
-  );
-
-  const ret = vectorStore.asRetriever({
-    k: CANDIDATE_COUNT,
-  });
-  const candidates = await ret.invoke(userQuery);
-
-  const seenContent = new Set();
-  const result = [];
-  for (const doc of candidates) {
-    const key = doc.pageContent?.trim();
-    if (!key || seenContent.has(key)) continue;
-    seenContent.add(key);
-    result.push(doc);
-    if (result.length >= MAX_SOURCES) break;
-  }
-
-  const contextText = result.map((doc) => doc.pageContent).join("\n\n");
-
-  const SYSTEM_PROMPT = `You are a helpful assistant. You will be provided with some context and a question. Answer the question based on the context.
-
-Formatting rules:
-- Reply in plain prose, using normal sentences and short paragraphs.
-- Do not use Markdown syntax of any kind — no **bold**, no #headings, no bullet or numbered lists, no backticks or code fences.
-- If you need to present a few related items, write them into a sentence separated by commas, not as a list.
-- If the context does not contain the answer, say so plainly instead of guessing.
-
-Context:${contextText}`;
-
-  const llm = new ChatGoogleGenerativeAI({
-    model: "gemini-3.5-flash-lite",
-    temperature: 0,
-    apiKey: process.env.GOOGLE_API_KEY,
-  });
-
-  const chatResult = await llm.invoke([
-    ["system", SYSTEM_PROMPT],
-    ["human", userQuery],
-  ]);
-
-  console.log("Chat Result: ", result);
-
-  return res.json({
-    message: chatResult.content,
-    docs: result,
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
   });
 });
 
-app.listen(8000, () => console.log("Server is running on port 8000"));
+app.use("/upload", uploadRouter);
+app.use("/chat", chatRouter);
+
+app.use((err, req, res, next) => {
+  console.error("[SERVER] Unhandled error:", err);
+
+  res.status(500).json({
+    message: "Internal server error.",
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

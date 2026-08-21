@@ -330,7 +330,6 @@ const ChatComponent: React.FC = () => {
                 onUploadSuccess={handleUploadSuccess}
                 onUploadError={handleUploadError}
                 isUploading={isUploading}
-                disabled={isLoading}
               />
               <textarea
                 ref={textareaRef}
@@ -340,7 +339,6 @@ const ChatComponent: React.FC = () => {
                 onInput={handleInput}
                 placeholder={hasAnyFiles ? "Ask a question about your document" : "Upload a PDF to get started"}
                 rows={1}
-                disabled={isLoading}
                 className="max-h-60 flex-1 resize-none border-none bg-transparent px-1 py-1.5 text-[15px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground"
               />
               <Button
