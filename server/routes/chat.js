@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
     }
 
     const fileName =
-      typeof req.query.fileName === "string"
+      typeof req.query.fileName === "string" && req.query.fileName.trim()
         ? req.query.fileName
         : getLatestUploadedFile();
 
@@ -25,6 +25,8 @@ router.get("/", async (req, res) => {
     console.log(`[CHAT] Query: ${userQuery}`);
 
     console.log(`[CHAT] File: ${fileName ?? "none"}`);
+
+    console.log(`[CHAT] Previous answer provided: ${lastAnswer.length > 0}`);
 
     const { answer, documents } = await answerQuestion({
       userQuery,
