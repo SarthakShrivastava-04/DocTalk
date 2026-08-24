@@ -119,10 +119,8 @@ Important rules:
 - If the context does not contain the answer, say so plainly instead of guessing.
 - You may use the previous answer to understand conversational context, but do not blindly repeat it.
 - If the user asks a follow-up question, connect it to the previous answer when appropriate.
-- Reply in plain prose, using normal sentences and short paragraphs.
+- answer in short paragraphs, if asked to explain or similar word used then explain.
 - Do not use Markdown syntax of any kind.
-- Do not use bullet points or numbered lists.
-- Do not use headings.
 - If you need to present related items, write them in a normal sentence separated by commas.
 
 Current question:
